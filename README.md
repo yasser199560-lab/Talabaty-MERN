@@ -1,90 +1,132 @@
-# Talabaty — merged project
+# Talabaty (طلباتي)
 
-This is the three uploaded project snapshots (`talabatyH1`, `talabaty_test`, `usedFiles`) combined
-into a single, complete, working full-stack app. Nothing from any of the three source folders was
-deleted — see **"What happened to each source folder"** at the bottom for exactly where every file
-ended up.
+**Your Local Market, One Tap Away**
 
-## Structure
+A regional hyper-local marketplace platform connecting customers with local businesses across the Bekaa Valley. Built on the MERN stack with TypeScript across the entire codebase.
 
-```
-talabaty-merged/
-├── backend/     Express + TypeScript + MongoDB API
-├── frontend/    React + TypeScript + Vite app
-└── archive/     Original files that weren't safe to wire into the live app (see below)
-```
+---
 
-## Running it
+## Table of Contents
 
-**Backend**
-```bash
-cd backend
-npm install
-cp .env.example .env      # fill in MONGO_URI / JWT_SECRET
-npm run dev                # http://localhost:5000
-```
+- [Overview](#overview)
+- [The Problem](#the-problem)
+- [Tech Stack](#tech-stack)
+- [Core User Roles](#core-user-roles)
+- [Store Categories](#store-categories)
+- [Data Model](#data-model)
+- [Key Technical Decisions](#key-technical-decisions)
+- [Authentication & Access Control](#authentication--access-control)
+- [What We Learned](#what-we-learned)
+- [Future Enhancements](#future-enhancements)
+- [Team](#team)
 
-**Frontend**
-```bash
-cd frontend
-npm install
-cp .env.example .env      # defaults to http://localhost:5000/api
-npm run dev                 # http://localhost:5173
-```
+---
 
-`npm run build` runs `tsc` first on both, so a failing type check fails the build — that's your
-zero-errors guardrail going forward too.
+## Overview
 
-## What was merged from where
+Talabaty digitizes local commerce in the Bekaa Valley by replacing scattered phone calls and messaging-app orders with a single, centralized, multi-vendor marketplace. It brings customers, local businesses, and platform administrators together in one system.
 
-- **Base app (backend + frontend):** `talabatyH1`. It was the most complete, working snapshot —
-  full customer flow (browse → cart → checkout → order history), partner dashboard, admin basics,
-  and the original design system in `frontend/src/styles/index.css` (brand colors, `.rounded-xl2`,
-  `.shadow-card`, `.btn-brand`, etc.) — **that stylesheet's rules are all still there, byte-for-byte,
-  as "Section 1"** of the new `index.css`.
-- **Newer public site + admin panel (frontend + backend):** `usedFiles`. This was clearly the most
-  recent work in progress — a redesigned marketing homepage (`Header`, `Footer`, and the
-  `sections/` folder: `Hero`, `Categories`, `HowitWorks`, `Partner`, `Rating`), a rebuilt Login/
-  Register flow, and a full admin dashboard (stats, customers, partners, orders, freeze/unfreeze,
-  partner approval) with a matching backend `adminController`/`adminRoutes`. All of that is now
-  wired in, and its stylesheets are "Section 2" of the merged `index.css`, plus their own files
-  (`Header.css`, `Hero.css`, `Login.css`, `AdminDahboard.css`, etc.) — nothing about that design was
-  altered.
-- **`talabaty_test`:** this snapshot's backend source had already lost most of its own code (its
-  `authController.ts`, `adminController.ts`, and `cartController.ts` were empty 0-byte files in the
-  zip you uploaded — only the old compiled `dist/` output still had real logic, and that logic was
-  already superseded by the other two folders). Its live ideas — a Tailwind-based partner dashboard
-  redesign, a `Category` product model with no way to actually create categories — were unfinished
-  and not wired to anything, so integrating them as-is would have reintroduced real errors. Rather
-  than lose them, the **entire original `talabaty_test` folder is preserved untouched** in
-  `archive/talabaty_test-original-experimental/` so you still have every file to pull ideas from
-  later; it's just not part of the live build.
+## The Problem
 
-## What I added on top (to make the merged pieces actually work together)
+Restaurants, supermarkets, pharmacies, clothing stores, bakeries, and other neighborhood shops still rely on phone calls and messaging apps to receive orders. This creates several recurring issues:
 
-- `POST /api/auth/forgot-password`, `POST /api/auth/reset-password`, `GET /api/auth/google` on the
-  backend — the new Login page already called these; they didn't exist anywhere yet. Google sign-in
-  has no OAuth credentials configured, so that route redirects back to login with a clear
-  `?googleError=not_configured` instead of a broken link or a raw 404.
-- `resetPasswordToken` / `resetPasswordExpire` fields on the `User` model to support the above.
-- Fixed the real bug in `usedFiles`' admin "products" endpoint, which was a stub that always
-  returned an empty list — it now actually queries products, like the rest of the admin panel does.
-- The header's account dropdown now reflects whether you're actually logged in (shows your name,
-  role, "My dashboard", and a working Log out) instead of always saying "Sign in to continue".
-- Added a few missing responsive breakpoints (admin sidebar on tablet/phone, hero section on
-  mobile) — everything else in the two active designs was already responsive via Bootstrap's grid.
-- `bootstrap-icons` added as a real dependency (the new Header/AdminDashboard use `bi bi-*` icon
-  classes that weren't available before); the original Tabler icon set some pages already used is
-  still loaded too, so nothing already using it breaks.
+1. **Manual, Error-Prone Ordering** — Phone and chat orders lead to communication errors, incomplete details, and delayed responses.
+2. **Limited Product Visibility** — Customers can't easily compare products and services across nearby businesses before ordering.
+3. **Fragmented Store Management** — Owners juggle stores, catalogs, inventory, and incoming orders with no unified system.
 
-## Notes
+Talabaty replaces this fragmented process with one centralized, multi-vendor marketplace.
 
-- Both designs coexist because they don't collide: the original app's utility classes
-  (`.text-navy-900`, `.bg-surface`, …) and the new site's classes (`.dashboard-wrapper`,
-  `.partner-sidebar`, …) use entirely different naming, so nothing needed to be rewritten or
-  overridden — everything was additive.
-- I couldn't run `npm install` / `npm run build` in this environment (no network access), so I
-  manually verified every relative import across both `frontend/src` and `backend/src` resolves to
-  a real file, and checked every place the merged pieces call into each other. Please run
-  `npm install && npm run build` in both folders as your first step — if anything unexpected turns
-  up, it'll be fast to point me at the exact error.
+## Tech Stack
+
+- **MongoDB** — Database
+- **Express.js** — Backend framework
+- **React.js** — Frontend framework
+- **Node.js** — Runtime environment
+- **TypeScript** — Used across both frontend and backend for type safety
+- **Bootstrap 5 + Bootstrap Icons** — Consistent, responsive UI components
+
+## Core User Roles
+
+| Role | Responsibilities |
+|------|-------------------|
+| **Customers** | Browse partner stores and products, add items to cart, and check out online. |
+| **Partners** | Manage their own product catalog, inventory, and incoming orders through a dedicated dashboard. |
+| **Admins** | Oversee accounts, approve partners and categories, and monitor the overall platform. |
+
+## Store Categories
+
+Talabaty organizes partner businesses into the following categories:
+
+- 🍲 Restaurants
+- 🛒 Supermarkets
+- 💊 Pharmacies
+- 👗 Fashion
+- 🥖 Bakeries
+- ☕ Cafés
+
+## Data Model
+
+The database design (ERD) follows this structure:
+
+- **Users** branch into `partner_profiles` (1:0..1) and drive both `carts` and `orders`.
+- **Products** belong to a `partner` and a `category`.
+- **Carts** and **Orders** each break into line-item collections (`cart_items`, `order_items`).
+
+### Admin & Partner Permissions
+
+**Admin**
+- Freeze or delete any user account
+- Approve, freeze, or delete partner profiles
+- Monitor all products (view-only)
+- Create and approve new categories
+
+**Partner**
+- Request new categories for admin approval
+
+## Key Technical Decisions
+
+- **TypeScript Everywhere** — Both frontend and backend are written in TypeScript for type safety across the stack.
+- **Mixed MongoDB IDs** — Some seed documents use custom string/number `_id`s instead of `ObjectId`, handled with `Schema.Types.Mixed` and manual joins where needed.
+- **Bootstrap for UI** — Consistent, responsive components styled with Bootstrap 5 and Bootstrap Icons.
+- **JWT + Role Middleware** — `protect()` verifies the token; `authorize(role)` gates access per route.
+- **Bcrypt Password Hashing** — Passwords are never stored in plain text; they are hashed before persistence.
+- **Role-Based Access Control** — Customer, Partner, and Admin routes are gated by role middleware.
+
+## Authentication & Access Control
+
+Talabaty implements a clean, role-based authentication flow:
+
+- JSON Web Tokens (JWT) are used to authenticate requests.
+- A `protect()` middleware verifies the token on protected routes.
+- An `authorize(role)` middleware restricts access based on the user's role (Customer, Partner, or Admin).
+- Passwords are hashed with Bcrypt before being stored.
+
+## What We Learned
+
+**New skills we gained confidence in:**
+
+- **JWT & Role-Based Access** — Designing an authentication flow that cleanly separates Customer, Partner, and Admin permissions across the stack.
+- **TypeScript Across the Stack** — Writing typed models, controllers, and React components, and using types to catch mismatches early.
+
+**Where we're still growing:**
+
+- **State Management & Data Joins Across Collections** — Working with MongoDB's flexible schema meant manually joining data across collections (e.g., linking a partner's user status to their store profile) instead of relying on relational joins — an area of the MERN stack the team is still building deeper comfort with.
+
+## Future Enhancements
+
+1. **Online Payment Gateway** — Automatic payment verification beyond Cash on Delivery / Whish Money.
+2. **Mobile Applications** — Native apps for customers and partners on the go.
+3. **Push Notifications** — Real-time order status updates for customers and partners.
+4. **Loyalty & Rewards** — Points, coupons, and promotional discounts for returning customers.
+5. **Reviews & Ratings** — Product reviews and store ratings to build trust.
+6. **Live Chat** — Direct chat between customers and businesses.
+
+## Team
+
+- Hala Al-Ali
+- Hidaya Abo Al Oyoun Assud
+- Yasser Kayed
+
+---
+
+*Talabaty — Your Local Market, One Tap Away.*
